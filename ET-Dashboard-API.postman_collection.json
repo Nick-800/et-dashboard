@@ -1,0 +1,627 @@
+{
+	"info": {
+		"_postman_id": "et-dashboard-api-collection",
+		"name": "ET Dashboard API",
+		"description": "Complete API collection for ET Dashboard - Image Gallery & Project Management System",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"name\": \"Test User\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"password_confirmation\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/register",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"register"
+							]
+						},
+						"description": "Register a new user account"
+					},
+					"response": []
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.data && jsonData.data.token) {",
+									"        pm.environment.set(\"auth_token\", jsonData.data.token);",
+									"        console.log(\"Token saved:\", jsonData.data.token);",
+									"    }",
+									"}"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							},
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n    \"email\": \"admin@mail.com\",\n    \"password\": \"password\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/api/login",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"login"
+							]
+						},
+						"description": "Login and receive authentication token (auto-saved to environment)"
+					},
+					"response": []
+				},
+				{
+					"name": "Logout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/logout",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"logout"
+							]
+						},
+						"description": "Logout and revoke the current authentication token"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Current User",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/user",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"user"
+							]
+						},
+						"description": "Get the authenticated user's information"
+					},
+					"response": []
+				}
+			],
+			"description": "User authentication endpoints"
+		},
+		{
+			"name": "Gallery Images",
+			"item": [
+				{
+					"name": "Get All Images",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/images",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"images"
+							]
+						},
+						"description": "Get all images from the gallery (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Image URLs Only",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/images/urls",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"images",
+								"urls"
+							]
+						},
+						"description": "Get only the full URLs of all gallery images (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Image",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/images/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"images",
+								"1"
+							]
+						},
+						"description": "Get a specific image by ID (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Upload Multiple Images",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": [],
+									"description": "Select one or multiple image files"
+								},
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": [],
+									"description": "Additional image (optional)"
+								},
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": [],
+									"description": "Additional image (optional)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/images",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"images"
+							]
+						},
+						"description": "Upload one or multiple images to the gallery (requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Image",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "image",
+									"type": "file",
+									"src": [],
+									"description": "Replace with a new image file"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/images/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"images",
+								"1"
+							]
+						},
+						"description": "Update an existing image (file and/or metadata) - requires authentication"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Image",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/images/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"images",
+								"1"
+							]
+						},
+						"description": "Delete an image from the gallery (requires authentication)"
+					},
+					"response": []
+				}
+			],
+			"description": "Gallery image management endpoints"
+		},
+		{
+			"name": "Projects",
+			"item": [
+				{
+					"name": "Get All Projects",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/projects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"projects"
+							]
+						},
+						"description": "Get all projects (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Get Single Project",
+					"request": {
+						"method": "GET",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/projects/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"projects",
+								"1"
+							]
+						},
+						"description": "Get a specific project by ID (public endpoint)"
+					},
+					"response": []
+				},
+				{
+					"name": "Create Project with Images",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "type",
+									"value": "Web Development",
+									"type": "text"
+								},
+								{
+									"key": "name",
+									"value": "E-commerce Platform",
+									"type": "text"
+								},
+								{
+									"key": "description",
+									"value": "A full-featured online store with payment integration and admin panel",
+									"type": "text"
+								},
+								{
+									"key": "year",
+									"value": "2026",
+									"type": "text"
+								},
+								{
+									"key": "services[]",
+									"value": "Frontend Development",
+									"type": "text"
+								},
+								{
+									"key": "services[]",
+									"value": "Backend API",
+									"type": "text"
+								},
+								{
+									"key": "services[]",
+									"value": "Database Design",
+									"type": "text"
+								},
+								{
+									"key": "services[]",
+									"value": "Payment Integration",
+									"type": "text"
+								},
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": [],
+									"description": "Project screenshot/image 1"
+								},
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": [],
+									"description": "Project screenshot/image 2 (optional)"
+								},
+								{
+									"key": "images[]",
+									"type": "file",
+									"src": [],
+									"description": "Project screenshot/image 3 (optional)"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/projects",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"projects"
+							]
+						},
+						"description": "Create a new project with multiple images (requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Update Project - Add Images",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "name",
+									"value": "Updated Project Name",
+									"type": "text",
+									"description": "Optional: update name"
+								},
+								{
+									"key": "type",
+									"value": "Mobile Development",
+									"type": "text",
+									"description": "Optional: update type"
+								},
+								{
+									"key": "description",
+									"value": "Updated project description",
+									"type": "text",
+									"description": "Optional: update description"
+								},
+								{
+									"key": "year",
+									"value": "2026",
+									"type": "text",
+									"description": "Optional: update year"
+								},
+								{
+									"key": "services[]",
+									"value": "iOS Development",
+									"type": "text",
+									"description": "Optional: update services"
+								},
+								{
+									"key": "services[]",
+									"value": "Android Development",
+									"type": "text"
+								},
+								{
+									"key": "new_images[]",
+									"type": "file",
+									"src": [],
+									"description": "Add new image to project"
+								},
+								{
+									"key": "new_images[]",
+									"type": "file",
+									"src": [],
+									"description": "Add another new image (optional)"
+								},
+								{
+									"key": "keep_existing_images",
+									"value": "true",
+									"type": "text",
+									"description": "true to keep old images, false to replace all"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{base_url}}/api/projects/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"projects",
+								"1"
+							]
+						},
+						"description": "Update a project and optionally add new images (requires authentication)"
+					},
+					"response": []
+				},
+				{
+					"name": "Delete Project",
+					"request": {
+						"method": "DELETE",
+						"header": [
+							{
+								"key": "Accept",
+								"value": "application/json"
+							},
+							{
+								"key": "Authorization",
+								"value": "Bearer {{auth_token}}"
+							}
+						],
+						"url": {
+							"raw": "{{base_url}}/api/projects/1",
+							"host": [
+								"{{base_url}}"
+							],
+							"path": [
+								"api",
+								"projects",
+								"1"
+							]
+						},
+						"description": "Delete a project (automatically deletes all project images) - requires authentication"
+					},
+					"response": []
+				}
+			],
+			"description": "Project management endpoints"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://127.0.0.1:8000",
+			"type": "string"
+		},
+		{
+			"key": "auth_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}

@@ -151,27 +151,61 @@ Retrieve a specific image by ID.
 ### Upload Image
 **POST** `/images` *(Requires Authentication)*
 
-Upload a new image to the gallery.
+Upload one or multiple images to the gallery.
 
 **Request (multipart/form-data):**
 ```
-image: (file) - Required. Image file (jpeg, png, jpg, gif, svg, webp). Max 10MB
-title: (string) - Optional. Image title
-description: (string) - Optional. Image description
+images[]: (file) - Required. One or multiple image files (jpeg, png, jpg, gif, svg, webp). Max 10MB each
+title: (string) - Optional. Image title (applied to all images)
+description: (string) - Optional. Image description (applied to all images)
+```
+
+**Example with curl (single image):**
+```bash
+curl -X POST http://localhost:8000/api/images \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "images[]=@/path/to/image1.jpg"
+```
+
+**Example with curl (multiple images):**
+```bash
+curl -X POST http://localhost:8000/api/images \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "images[]=@/path/to/image1.jpg" \
+  -F "images[]=@/path/to/image2.jpg" \
+  -F "images[]=@/path/to/image3.jpg" \
+  -F "title=My Images" \
+  -F "description=Gallery images"
 ```
 
 **Response (201):**
 ```json
 {
   "success": true,
-  "message": "Image uploaded successfully",
-  "data": {
-    "id": 2,
-    "title": "New Image",
-    "description": "My description",
-    "url": "http://localhost:8000/storage/gallery/new-image.jpg",
-    "filename": "new-image.jpg"
-  }
+  "message": "3 image(s) uploaded successfully",
+  "data": [
+    {
+      "id": 2,
+      "title": "My Images",
+      "description": "Gallery images",
+      "url": "http://localhost:8000/storage/gallery/image1.jpg",
+      "filename": "image1.jpg"
+    },
+    {
+      "id": 3,
+      "title": "My Images",
+      "description": "Gallery images",
+      "url": "http://localhost:8000/storage/gallery/image2.jpg",
+      "filename": "image2.jpg"
+    },
+    {
+      "id": 4,
+      "title": "My Images",
+      "description": "Gallery images",
+      "url": "http://localhost:8000/storage/gallery/image3.jpg",
+      "filename": "image3.jpg"
+    }
+  ]
 }
 ```
 
@@ -283,21 +317,31 @@ Retrieve a specific project by ID.
 ### Create Project
 **POST** `/projects` *(Requires Authentication)*
 
-Create a new project.
+Create a new project with optional image uploads.
 
-**Request Body:**
-```json
-{
-  "type": "Web Development",
-  "name": "E-commerce Platform",
-  "description": "A full-featured online store with payment integration",
-  "year": 2026,
-  "services": ["Frontend Development", "Backend API", "Database Design"],
-  "images": [
-    "http://localhost:8000/storage/gallery/project1.jpg",
-    "http://localhost:8000/storage/gallery/project2.jpg"
-  ]
-}
+**Request (multipart/form-data):**
+```
+type: (string) - Required. Project type/category
+name: (string) - Required. Project name
+description: (string) - Optional. Project description
+year: (integer) - Required. Project year
+services[]: (array of strings) - Required. Array of service names
+images[]: (files) - Optional. One or multiple image files for the project
+```
+
+**Example with curl (with images):**
+```bash
+curl -X POST http://localhost:8000/api/projects \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "type=Web Development" \
+  -F "name=E-commerce Platform" \
+  -F "description=A full-featured online store" \
+  -F "year=2026" \
+  -F "services[]=Frontend Development" \
+  -F "services[]=Backend API" \
+  -F "services[]=Database Design" \
+  -F "images[]=@/path/to/screenshot1.jpg" \
+  -F "images[]=@/path/to/screenshot2.jpg"
 ```
 
 **Response (201):**
@@ -309,12 +353,12 @@ Create a new project.
     "id": 2,
     "type": "Web Development",
     "name": "E-commerce Platform",
-    "description": "A full-featured online store with payment integration",
+    "description": "A full-featured online store",
     "year": 2026,
     "services": ["Frontend Development", "Backend API", "Database Design"],
     "images": [
-      "http://localhost:8000/storage/gallery/project1.jpg",
-      "http://localhost:8000/storage/gallery/project2.jpg"
+      "http://localhost:8000/storage/projects/screenshot1.jpg",
+      "http://localhost:8000/storage/projects/screenshot2.jpg"
     ],
     "created_at": "2026-01-14T00:00:00.000000Z",
     "updated_at": "2026-01-14T00:00:00.000000Z"
@@ -327,18 +371,27 @@ Create a new project.
 ### Update Project
 **PUT** `/projects/{id}` *(Requires Authentication)*
 
-Update an existing project.
+Update an existing project. Can add new images while keeping existing ones.
 
-**Request Body:**
-```json
-{
-  "type": "Mobile Development",
-  "name": "Updated Project Name",
-  "description": "Updated description",
-  "year": 2027,
-  "services": ["iOS Development", "Android Development"],
-  "images": ["http://localhost:8000/storage/gallery/new-image.jpg"]
-}
+**Request (multipart/form-data):**
+```
+type: (string) - Optional. Updated project type
+name: (string) - Optional. Updated project name
+description: (string) - Optional. Updated description
+year: (integer) - Optional. Updated year
+services[]: (array) - Optional. Updated services array
+new_images[]: (files) - Optional. New images to add to the project
+keep_existing_images: (boolean) - Optional. Default true. Set to false to replace all images
+```
+
+**Example with curl:**
+```bash
+curl -X POST "http://localhost:8000/api/projects/2" \
+  -H "Authorization: Bearer YOUR_TOKEN" \
+  -F "_method=PUT" \
+  -F "name=Updated Project Name" \
+  -F "new_images[]=@/path/to/new-image.jpg" \
+  -F "keep_existing_images=true"
 ```
 
 **Response (200):**
@@ -348,12 +401,15 @@ Update an existing project.
   "message": "Project updated successfully",
   "data": {
     "id": 2,
-    "type": "Mobile Development",
+    "type": "Web Development",
     "name": "Updated Project Name",
     "description": "Updated description",
-    "year": 2027,
-    "services": ["iOS Development", "Android Development"],
-    "images": ["http://localhost:8000/storage/gallery/new-image.jpg"],
+    "year": 2026,
+    "services": ["Frontend Development", "Backend API"],
+    "images": [
+      "http://localhost:8000/storage/projects/old-image.jpg",
+      "http://localhost:8000/storage/projects/new-image.jpg"
+    ],
     "created_at": "2026-01-14T00:00:00.000000Z",
     "updated_at": "2026-01-14T01:30:00.000000Z"
   }
@@ -417,14 +473,25 @@ Delete a project.
 
 ## Notes
 
-1. **Image Upload**: Images are stored in the `storage/app/public/gallery` directory and accessed via `/storage/gallery/{filename}`.
+1. **Image Storage**: 
+   - **Gallery images** are stored in `storage/app/public/gallery/` 
+   - **Project images** are stored in `storage/app/public/projects/`
+   - All images are accessed via `/storage/{folder}/{filename}`
 
-2. **Authentication**: Protected endpoints require a valid bearer token obtained from the login or register endpoints.
+2. **Multiple Image Uploads**: 
+   - Gallery: Use `images[]` parameter to upload multiple images at once
+   - Projects: Use `images[]` parameter when creating, or `new_images[]` when updating
 
-3. **File Size Limits**: Image uploads are limited to 10MB (10240KB).
+3. **Authentication**: Protected endpoints require a valid bearer token obtained from the login or register endpoints.
 
-4. **Supported Image Formats**: jpeg, png, jpg, gif, svg, webp
+4. **File Size Limits**: Image uploads are limited to 10MB (10240KB) per file.
 
-5. **Services & Images in Projects**: Both fields are arrays of strings. Services contain service names, while images contain URLs or paths to images.
+5. **Supported Image Formats**: jpeg, png, jpg, gif, svg, webp
 
-6. **Year Validation**: Year must be between 1900 and current year + 10.
+6. **Services in Projects**: Services field is an array of strings containing service names.
+
+7. **Project Images**: Images are automatically uploaded and stored with the project. When a project is deleted, all its images are automatically deleted.
+
+8. **Year Validation**: Year must be between 1900 and current year + 10.
+
+9. **Keeping Existing Images**: When updating a project, set `keep_existing_images=true` (default) to keep old images and add new ones, or `false` to replace all images.

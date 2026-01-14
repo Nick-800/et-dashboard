@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Storage;
 class Image extends Model
 {
     protected $fillable = [
-        'title',
-        'description',
         'path',
         'filename',
         'mime_type',

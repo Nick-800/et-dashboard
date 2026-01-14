@@ -21,8 +21,6 @@ class ImageController extends Controller
             'data' => $images->map(function ($image) {
                 return [
                     'id' => $image->id,
-                    'title' => $image->title,
-                    'description' => $image->description,
                     'url' => $image->url,
                     'filename' => $image->filename,
                     'mime_type' => $image->mime_type,
@@ -34,14 +32,29 @@ class ImageController extends Controller
     }
 
     /**
+     * Get only URLs of all images.
+     */
+    public function getUrls()
+    {
+        $baseUrl = config('app.url');
+        $images = Image::latest()->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $images->map(function ($image) use ($baseUrl) {
+                return $baseUrl . $image->url;
+            })->values()
+        ]);
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
-            'title' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
+            'images' => 'required|array',
+            'images.*' => 'required|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
         ]);
 
         if ($validator->fails()) {
@@ -51,28 +64,29 @@ class ImageController extends Controller
             ], 422);
         }
 
-        $file = $request->file('image');
-        $path = $file->store('gallery', 'public');
+        $uploadedImages = [];
 
-        $image = Image::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'path' => $path,
-            'filename' => $file->getClientOriginalName(),
-            'mime_type' => $file->getMimeType(),
-            'size' => $file->getSize(),
-        ]);
+        foreach ($request->file('images') as $file) {
+            $path = $file->store('gallery', 'public');
+
+            $image = Image::create([
+                'path' => $path,
+                'filename' => $file->getClientOriginalName(),
+                'mime_type' => $file->getMimeType(),
+                'size' => $file->getSize(),
+            ]);
+
+            $uploadedImages[] = [
+                'id' => $image->id,
+                'url' => $image->url,
+                'filename' => $image->filename,
+            ];
+        }
 
         return response()->json([
             'success' => true,
-            'message' => 'Image uploaded successfully',
-            'data' => [
-                'id' => $image->id,
-                'title' => $image->title,
-                'description' => $image->description,
-                'url' => $image->url,
-                'filename' => $image->filename,
-            ]
+            'message' => count($uploadedImages) . ' image(s) uploaded successfully',
+            'data' => $uploadedImages
         ], 201);
     }
 
@@ -94,8 +108,6 @@ class ImageController extends Controller
             'success' => true,
             'data' => [
                 'id' => $image->id,
-                'title' => $image->title,
-                'description' => $image->description,
                 'url' => $image->url,
                 'filename' => $image->filename,
                 'mime_type' => $image->mime_type,
@@ -121,8 +133,6 @@ class ImageController extends Controller
 
         $validator = Validator::make($request->all(), [
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
-            'title' => 'nullable|string|max:255',
-            'description' => 'nullable|string',
         ]);
 
         if ($validator->fails()) {
@@ -146,25 +156,14 @@ class ImageController extends Controller
             $image->filename = $file->getClientOriginalName();
             $image->mime_type = $file->getMimeType();
             $image->size = $file->getSize();
+            $image->save();
         }
-
-        // Update metadata
-        if ($request->has('title')) {
-            $image->title = $request->title;
-        }
-        if ($request->has('description')) {
-            $image->description = $request->description;
-        }
-
-        $image->save();
 
         return response()->json([
             'success' => true,
             'message' => 'Image updated successfully',
             'data' => [
                 'id' => $image->id,
-                'title' => $image->title,
-                'description' => $image->description,
                 'url' => $image->url,
                 'filename' => $image->filename,
             ]

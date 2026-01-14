@@ -69,11 +69,23 @@ class ProjectResource extends Resource
                     ]),
                 Forms\Components\Section::make('Project Images')
                     ->schema([
-                        Forms\Components\TagsInput::make('images')
-                            ->label('Image URLs')
-                            ->placeholder('Add image URL or path')
+                        Forms\Components\FileUpload::make('images')
+                            ->label('Project Images')
+                            ->image()
+                            ->multiple()
+                            ->directory('projects')
+                            ->disk('public')
                             ->columnSpanFull()
-                            ->helperText('Add image URLs or paths from the gallery'),
+                            ->maxFiles(20)
+                            ->reorderable()
+                            ->helperText('Upload one or multiple images for this project (max 20 files, 10MB each)')
+                            ->imageEditor()
+                            ->imageEditorAspectRatios([
+                                null,
+                                '16:9',
+                                '4:3',
+                                '1:1',
+                            ]),
                     ]),
             ]);
     }
@@ -102,6 +114,11 @@ class ProjectResource extends Resource
                     ->formatStateUsing(fn ($state) => is_array($state) ? implode(', ', array_slice($state, 0, 3)) : '')
                     ->limit(50)
                     ->tooltip(fn ($state) => is_array($state) && count($state) > 3 ? implode(', ', $state) : null),
+                Tables\Columns\TextColumn::make('images')
+                    ->label('Images')
+                    ->formatStateUsing(fn ($state) => is_array($state) ? count($state) . ' image(s)' : '0 images')
+                    ->badge()
+                    ->color('primary'),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Created')
                     ->dateTime()

@@ -26,8 +26,9 @@ class ImageResource extends Resource
         return $form
             ->schema([
                 Forms\Components\FileUpload::make('path')
-                    ->label('Image')
+                    ->label('Gallery Images')
                     ->image()
+                    ->multiple()
                     ->directory('gallery')
                     ->disk('public')
                     ->required()
@@ -38,14 +39,10 @@ class ImageResource extends Resource
                         '16:9',
                         '4:3',
                         '1:1',
-                    ]),
-                Forms\Components\TextInput::make('title')
-                    ->label('Title')
-                    ->maxLength(255),
-                Forms\Components\Textarea::make('description')
-                    ->label('Description')
-                    ->rows(3)
-                    ->columnSpanFull(),
+                    ])
+                    ->maxFiles(10)
+                    ->reorderable()
+                    ->helperText('Upload one or multiple images (max 10 files, 10MB each)'),
             ]);
     }
 
@@ -58,9 +55,6 @@ class ImageResource extends Resource
                     ->disk('public')
                     ->square()
                     ->size(80),
-                Tables\Columns\TextColumn::make('title')
-                    ->searchable()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('filename')
                     ->searchable()
                     ->limit(30),

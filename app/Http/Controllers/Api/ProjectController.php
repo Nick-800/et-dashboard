@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\Project;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class ProjectController extends Controller
@@ -14,7 +15,20 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::latest()->get();
+        $projects = Project::latest()->get()->map(function ($project) {
+            return [
+                'id' => $project->id,
+                'type' => $project->type,
+                'name' => $project->name,
+                'description' => $project->description,
+                'year' => $project->year,
+                'services' => $project->services,
+                'images' => $project->image_urls,
+                'created_at' => $project->created_at,
+                'updated_at' => $project->updated_at,
+            ];
+        });
+
         return response()->json([
             'success' => true,
             'data' => $projects
@@ -34,7 +48,7 @@ class ProjectController extends Controller
             'services' => 'required|array',
             'services.*' => 'string',
             'images' => 'nullable|array',
-            'images.*' => 'string',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
         ]);
 
         if ($validator->fails()) {
@@ -44,19 +58,38 @@ class ProjectController extends Controller
             ], 422);
         }
 
+        // Handle image uploads
+        $imagePaths = [];
+        if ($request->hasFile('images')) {
+            foreach ($request->file('images') as $image) {
+                $path = $image->store('projects', 'public');
+                $imagePaths[] = $path;
+            }
+        }
+
         $project = Project::create([
             'type' => $request->type,
             'name' => $request->name,
             'description' => $request->description,
             'year' => $request->year,
             'services' => $request->services,
-            'images' => $request->images ?? [],
+            'images' => $imagePaths,
         ]);
 
         return response()->json([
             'success' => true,
             'message' => 'Project created successfully',
-            'data' => $project
+            'data' => [
+                'id' => $project->id,
+                'type' => $project->type,
+                'name' => $project->name,
+                'description' => $project->description,
+                'year' => $project->year,
+                'services' => $project->services,
+                'images' => $project->image_urls,
+                'created_at' => $project->created_at,
+                'updated_at' => $project->updated_at,
+            ]
         ], 201);
     }
 
@@ -76,7 +109,17 @@ class ProjectController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $project
+            'data' => [
+                'id' => $project->id,
+                'type' => $project->type,
+                'name' => $project->name,
+                'description' => $project->description,
+                'year' => $project->year,
+                'services' => $project->services,
+                'images' => $project->image_urls,
+                'created_at' => $project->created_at,
+                'updated_at' => $project->updated_at,
+            ]
         ]);
     }
 
@@ -101,8 +144,9 @@ class ProjectController extends Controller
             'year' => 'nullable|integer|min:1900|max:' . (date('Y') + 10),
             'services' => 'nullable|array',
             'services.*' => 'string',
-            'images' => 'nullable|array',
-            'images.*' => 'string',
+            'new_images' => 'nullable|array',
+            'new_images.*' => 'image|mimes:jpeg,png,jpg,gif,svg,webp|max:10240',
+            'keep_existing_images' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -112,19 +156,45 @@ class ProjectController extends Controller
             ], 422);
         }
 
-        $project->update($request->only([
-            'type',
-            'name',
-            'description',
-            'year',
-            'services',
-            'images'
-        ]));
+        // Handle image updates
+        $imagePaths = $request->input('keep_existing_images', true) ? $project->images : [];
+
+        if ($request->hasFile('new_images')) {
+            foreach ($request->file('new_images') as $image) {
+                $path = $image->store('projects', 'public');
+                $imagePaths[] = $path;
+            }
+        }
+
+        // Update project data
+        $updateData = array_filter([
+            'type' => $request->type,
+            'name' => $request->name,
+            'description' => $request->description,
+            'year' => $request->year,
+            'services' => $request->services,
+        ], function ($value) {
+            return $value !== null;
+        });
+
+        $updateData['images'] = $imagePaths;
+
+        $project->update($updateData);
 
         return response()->json([
             'success' => true,
             'message' => 'Project updated successfully',
-            'data' => $project
+            'data' => [
+                'id' => $project->id,
+                'type' => $project->type,
+                'name' => $project->name,
+                'description' => $project->description,
+                'year' => $project->year,
+                'services' => $project->services,
+                'images' => $project->image_urls,
+                'created_at' => $project->created_at,
+                'updated_at' => $project->updated_at,
+            ]
         ]);
     }
 
