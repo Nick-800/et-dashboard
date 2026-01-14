@@ -10,6 +10,8 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -28,9 +30,9 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->login()
             ->brandName('ET Dashboard')
-            ->brandLogo(asset('images/logo.svg'))
+            ->brandLogo(asset('images/bclogo.png'))
             ->brandLogoHeight('3rem')
-            ->favicon(asset('images/logo.svg'))
+            ->favicon(asset('images/bclogo.png'))
             ->colors([
                 'primary' => [
                     50 => '#fff7ed',
@@ -97,5 +99,19 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    public function boot(): void
+    {
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::HEAD_END,
+            fn (): string => '<style>
+                .fi-logo {
+                    background-color: #3F3F7B !important;
+                    padding: 0.75rem 1.25rem !important;
+                    border-radius: 0.5rem !important;
+                }
+            </style>'
+        );
     }
 }
