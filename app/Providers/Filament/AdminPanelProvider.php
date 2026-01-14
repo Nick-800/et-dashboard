@@ -107,11 +107,28 @@ class AdminPanelProvider extends PanelProvider
             PanelsRenderHook::HEAD_END,
             fn (): string => '<style>
                 .fi-logo {
-                    background-color: #3F3F7B !important;
+                    background-color: #32325B !important;
                     padding: 0.75rem 1.25rem !important;
                     border-radius: 0.5rem !important;
                 }
-            </style>'
+            </style>
+            <script>
+                document.addEventListener("DOMContentLoaded", function() {
+                    // Replace main page heading
+                    const heading = document.querySelector(".fi-header-heading");
+                    if (heading && heading.textContent.trim() === "Dashboard") {
+                        heading.textContent = "ET-Group Dashboard";
+                    }
+
+                    // Replace sidebar Dashboard text
+                    const sidebarItems = document.querySelectorAll(".fi-sidebar-item-label");
+                    sidebarItems.forEach(item => {
+                        if (item.textContent.trim() === "Dashboard") {
+                            item.textContent = "ET-Group Dashboard";
+                        }
+                    });
+                });
+            </script>'
         );
     }
 }
