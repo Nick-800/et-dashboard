@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\ImageController;
+use App\Http\Controllers\Api\OrganizationController;
 use App\Http\Controllers\Api\ProjectController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -20,6 +21,11 @@ Route::get('/images/{id}', [ImageController::class, 'show']);
 Route::get('/projects', [ProjectController::class, 'index']);
 Route::get('/projects/{id}', [ProjectController::class, 'show']);
 
+// Organization structure routes - public access for frontend display
+Route::get('/organization', [OrganizationController::class, 'getTree']);
+Route::get('/organization/roots', [OrganizationController::class, 'getRoots']);
+Route::get('/organization/{id}', [OrganizationController::class, 'getNode']);
+
 // Protected routes - authentication required
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/images', [ImageController::class, 'store']);
@@ -29,4 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::put('/projects/{id}', [ProjectController::class, 'update']);
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
+
+    // Organization cache management - admin only
+    Route::post('/organization/clear-cache', [OrganizationController::class, 'clearCache']);
 });
