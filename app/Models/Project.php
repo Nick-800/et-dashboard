@@ -14,6 +14,7 @@ class Project extends Model
         'year',
         'services',
         'images',
+        'order',
     ];
 
     protected $casts = [

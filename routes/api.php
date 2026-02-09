@@ -35,6 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/projects', [ProjectController::class, 'store']);
     Route::put('/projects/{id}', [ProjectController::class, 'update']);
     Route::delete('/projects/{id}', [ProjectController::class, 'destroy']);
+    Route::post('/projects/reorder', [ProjectController::class, 'reorder']);
 
     // Organization cache management - admin only
     Route::post('/organization/clear-cache', [OrganizationController::class, 'clearCache']);

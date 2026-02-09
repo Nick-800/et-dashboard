@@ -95,6 +95,10 @@ class ProjectResource extends Resource
     {
         return $table
             ->columns([
+                Tables\Columns\TextColumn::make('order')
+                    ->label('Order')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: false),
                 Tables\Columns\TextColumn::make('name')
                     ->label('Project Name')
                     ->searchable()
@@ -139,7 +143,8 @@ class ProjectResource extends Resource
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
             ])
-            ->defaultSort('created_at', 'desc');
+            ->reorderable('order')
+            ->defaultSort('order', 'asc');
     }
 
     public static function getRelations(): array

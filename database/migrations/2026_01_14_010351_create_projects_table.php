@@ -19,6 +19,7 @@ return new class extends Migration
             $table->integer('year');
             $table->json('services');
             $table->json('images');
+            $table->integer('order')->default(0);
             $table->timestamps();
         });
     }

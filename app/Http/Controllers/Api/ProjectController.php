@@ -15,7 +15,7 @@ class ProjectController extends Controller
      */
     public function index()
     {
-        $projects = Project::latest()->get()->map(function ($project) {
+        $projects = Project::orderBy('order')->get()->map(function ($project) {
             return [
                 'id' => $project->id,
                 'type' => $project->type,
@@ -24,6 +24,8 @@ class ProjectController extends Controller
                 'year' => $project->year,
                 'services' => $project->services,
                 'images' => $project->image_urls,
+                'image_count' => is_array($project->images) ? count($project->images) : 0,
+                'order' => $project->order,
                 'created_at' => $project->created_at,
                 'updated_at' => $project->updated_at,
             ];
@@ -67,6 +69,9 @@ class ProjectController extends Controller
             }
         }
 
+        // Set order to highest + 1
+        $maxOrder = Project::max('order') ?? -1;
+
         $project = Project::create([
             'type' => $request->type,
             'name' => $request->name,
@@ -74,6 +79,7 @@ class ProjectController extends Controller
             'year' => $request->year,
             'services' => $request->services,
             'images' => $imagePaths,
+            'order' => $maxOrder + 1,
         ]);
 
         return response()->json([
@@ -87,6 +93,7 @@ class ProjectController extends Controller
                 'year' => $project->year,
                 'services' => $project->services,
                 'images' => $project->image_urls,
+                'order' => $project->order,
                 'created_at' => $project->created_at,
                 'updated_at' => $project->updated_at,
             ]
@@ -117,6 +124,8 @@ class ProjectController extends Controller
                 'year' => $project->year,
                 'services' => $project->services,
                 'images' => $project->image_urls,
+                'image_count' => is_array($project->images) ? count($project->images) : 0,
+                'order' => $project->order,
                 'created_at' => $project->created_at,
                 'updated_at' => $project->updated_at,
             ]
@@ -192,6 +201,7 @@ class ProjectController extends Controller
                 'year' => $project->year,
                 'services' => $project->services,
                 'images' => $project->image_urls,
+                'order' => $project->order,
                 'created_at' => $project->created_at,
                 'updated_at' => $project->updated_at,
             ]
@@ -217,6 +227,34 @@ class ProjectController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Project deleted successfully'
+        ]);
+    }
+
+    /**
+     * Reorder projects
+     */
+    public function reorder(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'projects' => 'required|array',
+            'projects.*.id' => 'required|exists:projects,id',
+            'projects.*.order' => 'required|integer|min:0',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        foreach ($request->projects as $projectData) {
+            Project::where('id', $projectData['id'])->update(['order' => $projectData['order']]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Projects reordered successfully'
         ]);
     }
 }
