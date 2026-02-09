@@ -121,10 +121,8 @@ class ProjectResource extends Resource
                     ->tooltip(fn ($state) => is_array($state) && count($state) > 3 ? implode(', ', $state) : null),
                 Tables\Columns\TextColumn::make('images')
                     ->label('Images')
-                    ->formatStateUsing(function ($state) {
-                        $count = is_array($state) ? count($state) : 0;
-                        return $count . ' image' . ($count === 1 ? '' : 's');
-                    })
+                    ->getStateUsing(fn ($record) => is_array($record->images) ? count($record->images) : 0)
+                    ->formatStateUsing(fn ($state) => $state . ' image' . ($state === 1 ? '' : 's'))
                     ->badge()
                     ->color('primary'),
                 Tables\Columns\TextColumn::make('created_at')
