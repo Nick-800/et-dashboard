@@ -19,6 +19,8 @@ class ImageResource extends Resource
 
     protected static ?string $navigationIcon = 'heroicon-o-photo';
 
+    protected static ?string $navigationLabel = 'Gallery';
+
     protected static ?string $navigationGroup = 'Gallery Management';
 
     public static function form(Form $form): Form
@@ -26,13 +28,14 @@ class ImageResource extends Resource
         return $form
             ->schema([
                 Forms\Components\FileUpload::make('path')
-                    ->label('Gallery Images')
-                    ->image()
+                    ->label('Gallery Images & Videos')
+                    ->acceptedFileTypes(['image/*', 'video/*'])
                     ->multiple()
                     ->directory('gallery')
                     ->disk('public')
                     ->required()
                     ->columnSpanFull()
+                    ->maxSize(20480)
                     ->imageEditor()
                     ->imageEditorAspectRatios([
                         null,
@@ -42,7 +45,7 @@ class ImageResource extends Resource
                     ])
                     ->maxFiles(10)
                     ->reorderable()
-                    ->helperText('Upload one or multiple images (max 10 files, 10MB each)'),
+                    ->helperText('Upload images or videos (max 10 files, 20MB each)'),
             ]);
     }
 

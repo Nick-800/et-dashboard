@@ -67,18 +67,19 @@ class ProjectResource extends Resource
                             ->columnSpanFull()
                             ->helperText('Press Enter after each service to add it'),
                     ]),
-                Forms\Components\Section::make('Project Images')
+                Forms\Components\Section::make('Project Media')
                     ->schema([
                         Forms\Components\FileUpload::make('images')
-                            ->label('Project Images')
-                            ->image()
+                            ->label('Project Images & Videos')
+                            ->acceptedFileTypes(['image/*', 'video/*'])
                             ->multiple()
                             ->directory('projects')
                             ->disk('public')
                             ->columnSpanFull()
                             ->maxFiles(20)
+                            ->maxSize(20480)
                             ->reorderable()
-                            ->helperText('Upload one or multiple images for this project (max 20 files, 10MB each)')
+                            ->helperText('Upload images or videos for this project (max 20 files, 20MB each)')
                             ->imageEditor()
                             ->imageEditorAspectRatios([
                                 null,
